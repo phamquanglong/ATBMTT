@@ -1,13 +1,14 @@
 import MenuUI from "./MenuUI";
-import { Typography, Button } from "antd";
+import { Typography, Button, Upload, message } from "antd";
 import { useState } from "react";
 import InputItem from "./InputItem";
+import { UploadOutlined } from "@ant-design/icons";
 
 var CryptoJS = require("crypto-js");
 
 const { Paragraph, Title } = Typography;
 
-var DES = (props) => {
+var DES = () => {
   var [valueA, setValueA] = useState("");
   var [valueB, setValueB] = useState("");
   var [encryptedText, setEncryptedText] = useState("");
@@ -17,7 +18,7 @@ var DES = (props) => {
     function encryptDesCbcPkcs7Padding(message, key) {
       var keyWords = CryptoJS.enc.Utf8.parse(key);
       var ivWords = CryptoJS.lib.WordArray.create([0, 0]);
-      var encrypted = CryptoJS.DES.encrypt(message, keyWords, { iv: ivWords });
+      var encrypted = CryptoJS.DES.encrypt(JSON.stringify({message}), keyWords, { iv: ivWords }).toString();
 
       return encrypted;
     }
@@ -31,6 +32,7 @@ var DES = (props) => {
     console.log("Encrypted: ", encrypted);
     var finalEncrypted = CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
     setEncryptedText(finalEncrypted);
+    console.log(finalEncrypted)
   };
 
   var decrypted = (finalEncrypted) => {
@@ -38,9 +40,9 @@ var DES = (props) => {
       var keyWords = CryptoJS.enc.Utf8.parse(key);
       var ivWords = CryptoJS.lib.WordArray.create([0, 0]);
 
-      var decrypted = CryptoJS.DES.decrypt({ ciphertext: message }, keyWords, {
+      var decrypted = CryptoJS.DES.decrypt(message.toString(), keyWords, {
         iv: ivWords,
-      });
+      }).toString(CryptoJS.enc.Utf8)
 
       return decrypted.toString(CryptoJS.enc.Utf8);
     }
@@ -63,6 +65,47 @@ var DES = (props) => {
     else n === 0 ? encrypted() : decrypted(encryptedText);
   };
 
+  const [fileList, setFileList] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = () => {
+    const formData = new FormData();
+    fileList.forEach((file) => {
+      formData.append("files[]", file);
+    });
+    setUploading(true); // You can use any AJAX library you like
+
+    fetch("https://www.mocky.io/v2/5cc8019d300000980a055e76", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then(() => {
+        setFileList([]);
+        message.success("upload successfully.");
+      })
+      .catch(() => {
+        message.error("upload failed.");
+      })
+      .finally(() => {
+        setUploading(false);
+      });
+  };
+
+  const props = {
+    onRemove: (file) => {
+      const index = fileList.indexOf(file);
+      const newFileList = fileList.slice();
+      newFileList.splice(index, 1);
+      setFileList(newFileList);
+    },
+    beforeUpload: (file) => {
+      setFileList([...fileList, file]);
+      return false;
+    },
+    fileList,
+  };
+
   return (
     <div style={styles.container}>
       <MenuUI selectedKey={"2"} />
@@ -77,26 +120,42 @@ var DES = (props) => {
         />
         <InputItem title="Nhập khoá" val={valueB} setValue={setValueB} />
         <div>
-        <div style={styles.button}>
+          <div style={styles.button}>
+            <Upload {...props}>
               <Button
-                onClick={() => validate(0)}
-                type="primary"
+                icon={<UploadOutlined />}
+                onClick={() => {
+                  fetch("data.txt")
+                    .then(function (response) {
+                      return response.text();
+                    })
+                    .then(function (data) {
+                      console.log(data);
+                    });
+                }}
               >
-                Mã hoá
+                Select File
               </Button>
-              </div>
+            </Upload>
+            <Button onClick={() => validate(0)} type="primary">
+              Mã hoá
+            </Button>
+          </div>
           {encryptedText.length > 0 && (
             <div>
               <InputItem title="Bản mã" disabled={false} val={encryptedText} />
               <div style={styles.button}>
-              <Button
-                onClick={() => validate(1)}
-                type="primary"
-              >
-                Giải mã
-              </Button>
+                <Button onClick={() => validate(1)} type="primary">
+                  Giải mã
+                </Button>
               </div>
-              {decryptedText.length > 0 && <InputItem title="Bản rõ" val={decryptedText} disabled={false} />}
+              {decryptedText.length > 0 && (
+                <InputItem
+                  title="Bản rõ"
+                  val={decryptedText}
+                  disabled={false}
+                />
+              )}
             </div>
           )}
         </div>
