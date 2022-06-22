@@ -1,15 +1,12 @@
 import React, {useState} from "react";
 import {
-  AppstoreOutlined,
-  ContainerOutlined,
   MenuFoldOutlined,
   PieChartOutlined,
   MenuUnfoldOutlined,
   DesktopOutlined,
-  MailOutlined,
 } from "@ant-design/icons";
 import { Button, Menu, Typography } from "antd";
-import {useNavigate, useLocation} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 
 function getItem(label, key, icon, type) {
   return {

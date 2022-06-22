@@ -1,6 +1,7 @@
 import { Button, Table, Typography, Input } from "antd";
 
 const { Title, Paragraph } = Typography;
+const { TextArea } = Input
 var InputItem = (props) => {
   var {
     title,
@@ -10,6 +11,7 @@ var InputItem = (props) => {
     colorName,
     fontSizeName,
     fontWeightName,
+    rowsCount
   } = props;
 
   return (
@@ -26,12 +28,14 @@ var InputItem = (props) => {
       >
         {title}
       </Paragraph>
-      <Input
+      {rowsCount === undefined ? <Input
         value={val}
         onChange={(text) => setValue(text.target.value)}
         contentEditable={disabled}
         style={{color: colorName, fontWeight: fontWeightName, fontSize: fontSizeName}}
-      />
+      /> : <TextArea rows={rowsCount} value={val}
+      onChange={(text) => setValue(text.target.value)}
+      contentEditable={disabled}/>}
     </div>
   );
 };
