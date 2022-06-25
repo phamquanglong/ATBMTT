@@ -11,7 +11,8 @@ var InputItem = (props) => {
     colorName,
     fontSizeName,
     fontWeightName,
-    rowsCount
+    rowsCount,
+    docxDiv
   } = props;
 
   return (
@@ -28,14 +29,15 @@ var InputItem = (props) => {
       >
         {title}
       </Paragraph>
-      {rowsCount === undefined ? <Input
+      {docxDiv !== undefined ? <div style={styles.docxDiv} dangerouslySetInnerHTML={{__html: docxDiv}}></div>
+      : (rowsCount === undefined ? <Input
         value={val}
         onChange={(text) => setValue(text.target.value)}
         contentEditable={disabled}
         style={{color: colorName, fontWeight: fontWeightName, fontSize: fontSizeName}}
       /> : <TextArea rows={rowsCount} value={val}
       onChange={(text) => setValue(text.target.value)}
-      contentEditable={disabled}/>}
+      contentEditable={disabled}/>)}
     </div>
   );
 };
@@ -47,6 +49,16 @@ var styles = {
     display: "flex",
     alignItems: "center",
   },
+  docxDiv: {
+    display: "flex",
+    flex: 1,
+    paddingTop: 10,
+    flexDirection: "column",
+    paddingLeft: 10,
+    paddingRight: 10,
+    border: '1px solid rgb(217, 217, 217)',
+    // backgroundColor: 'green'
+  }
 };
 
 export default InputItem;

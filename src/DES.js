@@ -2,7 +2,7 @@ import MenuUI from "./MenuUI";
 import { Typography, Button, Upload, message } from "antd";
 import { useState, useRef } from "react";
 import InputItem from "./InputItem";
-import { convertToHtml } from "mammoth/mammoth.browser";
+import {convertToHtml} from "./mammoth.browser";
 
 var CryptoJS = require("crypto-js");
 
@@ -51,9 +51,13 @@ var DES = () => {
   }
 
   var validate = (n) => {
-    if (valueA === "") alert("Thông tin cần mã hoá không được bỏ trống");
+    if (valueA === "" && docxDiv === undefined) alert("Thông tin cần mã hoá không được bỏ trống");
     else if (valueB === "") alert("Khoá không được bỏ trống");
-    // else n === 0 ? encrypted() : decrypted(encryptedText);
+    else if (docxDiv !== undefined) {
+      n === 0
+        ? encryptByDES(docxDiv, valueB)
+        : decryptByDES(encryptedText, valueB);
+    }
     else
       n === 0
         ? encryptByDES(valueA, valueB)
@@ -70,7 +74,7 @@ var DES = () => {
     reader.readAsText(file);
   };
 
-  function readDocFile(file) {
+  function readDocxFile(file) {
     let reader = new FileReader();
     const fileByteArray = [];
 
@@ -104,12 +108,14 @@ var DES = () => {
         <Title level={2} style={styles.title}>
           Mã hoá DES
         </Title>
-        {docxDiv === undefined ? <InputItem
+        <InputItem
           title="Nhập thông tin cần mã hoá"
           val={valueA}
           setValue={setValueA}
           rowsCount={2}
-        /> : <div style={styles.docxDiv} dangerouslySetInnerHTML={{__html: docxDiv}}></div>}
+          docxDiv={docxDiv === undefined ? undefined : docxDiv}
+        />
+        
         <InputItem title="Nhập khoá" val={valueB} setValue={setValueB} />
         <div>
           <div style={styles.button}>
@@ -117,7 +123,10 @@ var DES = () => {
               onChange={(e) => {
                 e.target.files[0].name.includes(".txt")
                   ? readTxtFile(e)
-                  : readDocFile(e.target.files[0]);
+                  : readDocxFile(e.target.files[0]);
+                setEncryptedText("")
+                setDecryptedText("")
+                setDocxDiv(undefined)
               }}
               type="file"
             />
@@ -140,6 +149,7 @@ var DES = () => {
                   val={decryptedText}
                   disabled={false}
                   rowsCount={2}
+                  docxDiv={docxDiv === undefined ? undefined : decryptedText}
                 />
               )}
             </div>
@@ -182,9 +192,6 @@ var styles = {
   input: {
     visibility: "hidden",
   },
-  docxDiv: {
-    maxWidth: "70%"
-  }
 };
 
 export default DES;
